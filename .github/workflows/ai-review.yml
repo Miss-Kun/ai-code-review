@@ -1,0 +1,43 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install OpenAI
+        run: pip install openai
+
+      - name: AI Review
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python <<EOF
+          from openai import OpenAI
+          import os
+
+          client = OpenAI(
+              api_key=os.environ["OPENAI_API_KEY"]
+          )
+
+          response = client.responses.create(
+              model="gpt-5",
+              input="""
+              请检查这个代码项目：
+              - 查找Bug
+              - 检查安全问题
+              - 给出优化建议
+              """
+          )
+
+          print(response.output_text)
+          EOF
